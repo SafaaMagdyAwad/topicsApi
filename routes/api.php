@@ -5,6 +5,9 @@ use App\Http\Controllers\Api\Admin\MessageController;
 use App\Http\Controllers\Api\Admin\TestimonialController;
 use App\Http\Controllers\Api\Admin\TopicController;
 use App\Http\Controllers\Api\Admin\UserController;
+use App\Http\Controllers\Api\Auth\LoginController;
+use App\Http\Controllers\Api\Auth\LogoutController;
+use App\Http\Controllers\Api\Auth\RegisterController;
 use App\Http\Controllers\Api\PublicController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -20,8 +23,11 @@ Route::controller(PublicController::class)->group(function () {
     Route::put('readTopic/{id}', 'readTopic')->name('readTopic');
     Route::post('newsletter', 'newsletter')->name('newsletter');
 });
+Route::post('register',[RegisterController::class,'register']);
+Route::post('login',[LoginController::class,'login']);
 
 Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
+    Route::post('logout',[LogoutController::class,'logout']);
     Route::resource('category', CategoryController::class)->except(['show']);
     Route::prefix('message')->name('message')->group(function () {
         Route::controller(MessageController::class)->group(function () {
