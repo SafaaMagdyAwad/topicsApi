@@ -13,17 +13,23 @@ class RegisterController extends Controller
     public function register(Request $request): JsonResponse
     {
         $validator=FacadesValidator::make($request->all(),[
-            "name"=>'required|string|max:255',
+            "first_name"=>'required|string|max:255',
+            "last_name"=>'required|string|max:255',
+            "first_name"=>'required|string|max:255',
             "email"=>'required|email|unique:users,email|max:255',
             "password"=>'required|string|min:8|max:255',
         ]);
+
         if($validator->fails()){
             return response()->json([
                 "message"=>$validator->messages(),
             ],300);
         }
         $user=User::create([
-            'name'=>$request->name,
+            'first_name'=>$request->first_name,
+            'last_name'=>$request->last_name,
+            'user_name'=>$request->user_name,
+            'is_active'=>1,
             'email'=>$request->email,
             'password'=>Hash::make($request->password),
         ]);
