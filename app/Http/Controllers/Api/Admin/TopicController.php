@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\TopicResource;
 use App\Models\Category;
 use App\Models\Topic;
 use App\Traits\Common;
@@ -17,21 +18,12 @@ class TopicController extends Controller
     public function index()
     {
         $topics=Topic::with('category')->get();
-        return view('admin.topic.index',compact('topics'));
+        return response()->json([
+            "topics" => TopicResource::collection($topics),
+        ], 200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        $categories=Category::all();
-        return view('admin.topic.create',compact('categories'));
-    }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -45,9 +37,11 @@ class TopicController extends Controller
         $data['trending']=isset($request->trending);
         $data['image']=$this->upload_file($request->image,'assets/admin/images/topics');
         // dd($data);
-        Topic::create($data);
-        return redirect()->route('topic.index');
-
+        $topic=Topic::create($data);
+        return response()->json([
+            "success" => "topic was added successfully!",
+            "topic"=>new TopicResource($topic),
+        ], 200);
     }
 
     /**
@@ -56,22 +50,13 @@ class TopicController extends Controller
     public function show(string $id)
     {
         $topic=Topic::with('category')->findOrFail($id);
-        return view('admin.topic.show',compact('topic'));
+        return response()->json([
+            "topic"=>new TopicResource($topic),
+        ], 200);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        $topic=Topic::with('category')->findOrFail($id);
-        $categories=Category::all();
-        return view('admin.topic.edit',compact('categories','topic'));
-    }
 
-    /**
-     * Update the specified resource in storage.
-     */
+
     public function update(Request $request, Topic $topic)
     {
         // dd($request->all());
@@ -87,8 +72,10 @@ class TopicController extends Controller
         $data['image']=(isset($request->image)) ? $this->upload_file($request->image,'assets/admin/images/topics'):$request->old_image;
         // dd($data);
         $topic->update($data);
-        return redirect()->route('topic.index');
-    }
+        return response()->json([
+            "success" => "topic was Updated successfully!",
+            "topic"=>new TopicResource($topic),
+        ], 200);    }
 
     /**
      * Remove the specified resource from storage.
@@ -96,6 +83,8 @@ class TopicController extends Controller
     public function destroy(Topic $topic)
     {
         $topic->delete();
-        return redirect()->back()->with('success',"This Topic Was Deleted Successfully !");
+        return response()->json([
+            "success" => "topic was deleted successfully!",
+        ], 200);
     }
 }

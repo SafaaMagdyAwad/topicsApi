@@ -39,7 +39,7 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
     Route::resource('user', UserController::class)->except(['show']);
     Route::resource('topic', TopicController::class);
     Route::resource('testimonial', TestimonialController::class);
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    });
+    // Route::get('/user', function (Request $request) {
+    //     return $request->user();
+    // });
 });

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\TestimonialResource;
 use App\Models\Testimonial;
 use App\Traits\Common;
 use Illuminate\Http\Request;
@@ -16,16 +17,13 @@ class TestimonialController extends Controller
     public function index()
     {
         $testimonials=Testimonial::all();
-        return view('admin.testimonial.index',compact('testimonials'));
+        return response()->json([
+            "file_path"=>"assets/admin/images/testimonials",
+            "testimonials" => TestimonialResource::collection($testimonials),
+        ], 200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        return view('admin.testimonial.create');
-    }
+
 
     /**
      * Store a newly created resource in storage.
@@ -39,22 +37,22 @@ class TestimonialController extends Controller
         ]);
         $data['published']=isset($request->published);
         $data['image']=$this->upload_file($request->image,'assets/admin/images/testimonials');
-        Testimonial::create($data);
-        return redirect()->route('testimonial.index');
+        $testimonial=Testimonial::create($data);
+        return response()->json([
+            "file_path"=>"assets/admin/images/testimonials",
+            "success" => "Testimonial was added successfully",
+            "testimonial"=>new TestimonialResource($testimonial),
+        ], 200);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Testimonial $testimonial)
+    public function show(string $id)
     {
-        return view('admin.testimonial.edit',compact('testimonial'));
-
+        $testimonial=Testimonial::findOrFail($id);
+        return response()->json([
+            "testimonial"=>new TestimonialResource($testimonial),
+        ], 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Testimonial $testimonial)
     {
         $data = $request->validate([
@@ -67,7 +65,11 @@ class TestimonialController extends Controller
         $data['image']=(isset($request->image))?$this->upload_file($request->image,'assets/admin/images/testimonials'):$request->old_image;
         // dd($data);
         $testimonial->update($data);
-        return redirect()->route('testimonial.index');
+        return response()->json([
+            "file_path"=>"assets/admin/images/testimonials",
+            "success" => "Testimonial was udated successfully",
+            "testimonial"=>new TestimonialResource($testimonial),
+        ], 200);
     }
 
     /**
@@ -76,6 +78,7 @@ class TestimonialController extends Controller
     public function destroy(Testimonial $testimonial)
     {
         $testimonial->delete();
-        return redirect()->back()->with('success',"This Testimonial Was Deleted Successfully !");
-    }
+        return response()->json([
+            "success" => "Testimonial was deleted successfully",
+        ], 200);    }
 }

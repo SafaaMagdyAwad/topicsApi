@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\MessageResource;
 use App\Models\Message;
 use Illuminate\Http\Request;
 
@@ -12,8 +13,10 @@ class MessageController extends Controller
     {
         $read=Message::where('isread',1)->get();
         $unread=Message::where('isread',0)->get();
-        $messages=['read'=>$read,'unread'=>$unread];
-        return view('admin.message.index',compact('messages'));
+        return response()->json([
+            "readMessages" => MessageResource::collection($read),
+            "unReadMessages" => MessageResource::collection($unread),
+        ], 200);
     }
     public function read(Message $message){
         if($message->isread==0){
@@ -21,11 +24,16 @@ class MessageController extends Controller
                 'isread'=> 1,
             ]);
         }
-        return view('admin.message.details',compact('message'));
+        return response()->json([
+            "success" => "Message was read successfull!",
+            "message"=>new MessageResource($message),
+        ], 200);
     }
     public function destroy(Message $message){
         $message->delete();
-        return redirect()->back()->with('success',"This Message Was Deleted Successfully !");
+        return response()->json([
+            "success" => "Message was deleted successfull!",
+        ], 200);
     }
 
 }

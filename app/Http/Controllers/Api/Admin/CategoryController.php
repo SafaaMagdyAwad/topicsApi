@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\CategoryResource;
 use App\Models\Category;
 use Illuminate\Http\Request;
 
@@ -13,65 +14,51 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        $categories=Category::all();
-        return view('admin.category.index',compact('categories'));
+        $categories = Category::all();
+        return response()->json([
+            "categories" => CategoryResource::collection($categories),
+        ], 200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        return view('admin.category.create');
-    }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+
     public function store(Request $request)
     {
-        $data=$request->validate([
+        $data = $request->validate([
             'category' => 'required|string|unique:categories,category',
         ]);
-        Category::create($data);
-        return redirect()->route('category.index');
+        $category=Category::create($data);
+        return response()->json([
+            "success" => "category was added successfully!",
+            "category"=>new CategoryResource($category),
+        ], 200);
     }
 
-
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Category $category)
-    {
-
-        return view('admin.category.edit',compact('category'));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Category $category)
     {
-        $data=$request->validate([
-            'category' => 'required|string|unique:categories,category,'. $category->id ,
+        $data = $request->validate([
+            'category' => 'required|string|unique:categories,category,' . $category->id,
         ]);
         $category->update($data);
-        return redirect()->route('category.index');
-
+        return response()->json([
+            "success" => "category was Updated successfully!",
+            "category"=>new CategoryResource($category),
+        ], 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+
     public function destroy(string $id)
     {
-        $category=Category::with('topics')->findOrFail($id);
+        $category = Category::with('topics')->findOrFail($id);
         // dd($category->topics->count());
-        if($category->topics->count() != 0){
-            return redirect()->back()->with('error',"This Category Can't Be Deleted !");
+        if ($category->topics->count() != 0) {
+            return response()->json([
+                "error" => "category cant be deleted!",
+            ], 300);
         }
         $category->delete();
-        return redirect()->back()->with('success',"This Category Was Deleted Successfully !");
+        return response()->json([
+            "success" => "category was deleted successfully!",
+        ], 200);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -16,20 +17,13 @@ class UserController extends Controller
     public function index()
     {
         $users=User::all();
-        return view('admin.user.index',compact('users'));
+        return response()->json([
+            "users"=>new UserResource($users),
+        ], 200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        return view('admin.user.create');
-    }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+
     public function store(Request $request)
     {
         // this user will be active and vertified
@@ -43,21 +37,15 @@ class UserController extends Controller
         $data['password'] = Hash::make($data['password']);
         $data['is_active']=1;
         $data['email_verified_at'] = Carbon::now()->format('Y-m-d H:i:s');
-        User::create($data);
-        return redirect()->route('user.index');
+        $user=User::create($data);
+        return response()->json([
+            "success"=>"user added successfull",
+            "user"=>new UserResource($user),
+        ], 200);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(User $user)
-    {
-        return view('admin.user.edit', compact('user'));
-    }
 
-    /**
-     * Update the specified resource in storage.
-     */
+
     public function update(Request $request, User $user)
     {
         $data = $request->validate([
@@ -71,7 +59,10 @@ class UserController extends Controller
         $data['password'] =isset($request->password)? Hash::make($request->password):$user->password;
         // dd($user->password);
         $user->update($data);
-        return redirect()->route('user.index');
+        return response()->json([
+            "success"=>"user updated successfull",
+            "user"=>new UserResource($user),
+        ], 200);
     }
 
     /**
@@ -80,6 +71,8 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         $user->delete();
-        return redirect()->back()->with('success',"This User Was Deleted Successfully !");
+        return response()->json([
+            "success"=>"user deleted successfull",
+        ], 200);
     }
 }
