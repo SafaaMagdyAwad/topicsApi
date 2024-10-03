@@ -23,5 +23,6 @@ class DatabaseSeeder extends Seeder
         Topic::factory(20)->create();
         Testimonial::factory(10)->create();
         Subscripe::factory(6)->create();
+        User::factory(6)->create();
     }
 }
