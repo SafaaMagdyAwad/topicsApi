@@ -27,7 +27,7 @@ class LoginController extends Controller
         $user=User::where('email',$request->email)->first();
         if(! $user || ! Hash::check($request->password, $user->password)){
             return response()->json([
-                "message"=>"credentials dont match",
+                "message"=>"credentials don't match",
             ],400);
         }
         $token=$user->createToken($user->name."Auth-Token")->plainTextToken;//could be any random value
